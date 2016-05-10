@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="Encoding" defaultCharsetForPropertiesFiles="UTF-8">
+    <file url="file://$PROJECT_DIR$/core/__init__.py" charset="GBK" />
+    <file url="file://$PROJECT_DIR$/core/geo.py" charset="GBK" />
+    <file url="file://$PROJECT_DIR$/core/log.py" charset="GBK" />
+    <file url="file://$PROJECT_DIR$/core/report.py" charset="GBK" />
+    <file url="file://$PROJECT_DIR$/core/settings.py" charset="GBK" />
+    <file url="file://$PROJECT_DIR$/core/utils.py" charset="GBK" />
+    <file url="PROJECT" charset="UTF-8" />
+  </component>
+</project>
