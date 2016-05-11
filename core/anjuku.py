@@ -127,23 +127,23 @@ def crawler(project, address, port):
     client = MongoClient(address, port)
     db = client[project]
 
-    if "Linux" in platform.platform():
-        pass
-    else:
-        browser = webdriver.PhantomJS(executable_path=r'C:\Workspace\phantomjs\bin\phantomjs.exe')
+    # if "Linux" in platform.platform():
+    #     pass
+    # else:
+    #     browser = webdriver.PhantomJS(executable_path=r'C:\Workspace\phantomjs\bin\phantomjs.exe')
 
     # if "Linux" in platform.platform():
     #     display = Display(visible=0, size=(1024, 768))
     #     display.start()
 
-    # firefox_profile = webdriver.FirefoxProfile()
-    # firefox_profile.set_preference('permissions.default.image', 2)
-    # firefox_profile.set_preference('dom.ipc.plugins.enabled.libflashplayer.so', 'false')
-    #
-    # browser = webdriver.Firefox(firefox_profile=firefox_profile)
-    #
-    # browser.set_window_size(960, 1050)
-    # browser.set_window_position(0, 0)
+    firefox_profile = webdriver.FirefoxProfile()
+    firefox_profile.set_preference('permissions.default.image', 2)
+    firefox_profile.set_preference('dom.ipc.plugins.enabled.libflashplayer.so', 'false')
+
+    browser = webdriver.Firefox(firefox_profile=firefox_profile)
+
+    browser.set_window_size(960, 1050)
+    browser.set_window_position(0, 0)
 
     browser.set_page_load_timeout(TIMEOUT)
     city = "beijing"
@@ -247,28 +247,26 @@ def crawler_community(project, address, port):
         try:
             print community['url']
             browser.get(community['url'])
-            time.sleep(get_interval_as_human(2, 3))
+            time.sleep(get_interval_as_human(3, 4))
             i += 1
         except BadStatusLine:
-            log(WARNING, 'Bad Status')
-            continue
+            log(WARNING, 'Bad Status, may be identified as a robot.')
+            exit(0)
         except TimeoutException:
+            browser.execute_script('window.stop()')
             log(WARNING, 'Time out')
-            continue
-        except errors.CursorNotFound:
-            log(WARNING, 'Cursor not found')
-            continue
+
         soup = BeautifulSoup(browser.page_source, 'html5lib')
 
         r_co, p_type, p_co, p_payment, t_area, t_units, built_at, rental_ratio, far, park, green, desc = "", "", "", "", "", "", "", "", "", "", "", ""
 
-        j = 0
-        while True:
-            try:
-                lines = len(soup.find('dl', class_="comm-l-detail float-l").contents)
-                break
-            except:
-                time.sleep(600)
+        j, lines = 0, 0
+
+        try:
+            lines = len(soup.find('dl', class_="comm-l-detail float-l").contents)
+        except:
+            log(WARNING, 'Bad Status, may be identified as a robot.')
+            exit(0)
 
         while j < lines:
             item = soup.find('dl', class_="comm-l-detail float-l").contents[j]
@@ -293,13 +291,11 @@ def crawler_community(project, address, port):
                 p_payment = value
             j += 1
 
-        j = 0
-        while True:
-            try:
-                lines = len(soup.find('dl', class_="comm-r-detail float-r").contents)
-                break
-            except:
-                time.sleep(600)
+        j, lines = 0, 0
+        try:
+            lines = len(soup.find('dl', class_="comm-r-detail float-r").contents)
+        except:
+            continue
 
         while j < lines:
             item = soup.find('dl', class_="comm-r-detail float-r").contents[j]
@@ -357,8 +353,10 @@ def crawler_community(project, address, port):
             "green": green,
             "desc": desc
         }
-
-        print i, community['name'], r_co, p_type, p_co, p_payment, t_area, t_units, built_at, rental_ratio, far, park, green
+        try:
+            print i, community['name'], r_co, p_type, p_co, p_payment, t_area, t_units, built_at, rental_ratio, far, park, green
+        except:
+            pass
         db.communities.update({'name': community['name']}, {'$set': page_json})
 
     log(NOTICE, "mission completes.")
